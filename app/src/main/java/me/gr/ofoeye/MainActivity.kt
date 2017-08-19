@@ -42,14 +42,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        eye_view.registerSensorListener()
         map_view.onResume()
+        eye_view.registerSensorListener()
     }
 
     override fun onPause() {
         super.onPause()
-        eye_view.unregisterSensorListener()
         map_view.onPause()
+        eye_view.unregisterSensorListener()
     }
 
     override fun onDestroy() {

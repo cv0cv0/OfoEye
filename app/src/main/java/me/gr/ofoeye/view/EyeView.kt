@@ -1,7 +1,10 @@
 package me.gr.ofoeye.view
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.content.Context
-import android.graphics.Point
 import android.graphics.PointF
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -10,7 +13,6 @@ import android.hardware.SensorManager
 import android.os.Handler
 import android.os.Message
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.view_eye.view.*
@@ -24,19 +26,56 @@ class EyeView(context: Context, attrs: AttributeSet?) : FrameLayout(context, att
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     private val sensorListener = EyeSensorEventListener()
-    private val handle=EyeHandle()
+    private val handle = EyeHandle()
+
+    private var translationYCount = dp2px(195f)
+    private var rotationAngle = 180f
+    private var isGone = false
 
     init {
         View.inflate(context, R.layout.view_eye, this)
         setBackgroundResource(R.drawable.bg_eyeview)
+        arrow.setOnClickListener { startAnimation() }
     }
 
     fun registerSensorListener() {
-        sensorManager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_UI)
+        if (!isGone) sensorManager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_UI)
     }
 
     fun unregisterSensorListener() {
         sensorManager.unregisterListener(sensorListener)
+    }
+
+    private fun startAnimation() {
+        when {
+            arrow.rotation == 180f -> {
+                translationYCount = 0f
+                rotationAngle = 0f
+            }
+            arrow.rotation == 0f -> {
+                translationYCount = dp2px(195f)
+                rotationAngle = 180f
+            }
+            else -> return
+        }
+
+        val translationAnimator = ObjectAnimator.ofFloat(this, "translationY", translationYCount)
+        val rotationAnimator = ObjectAnimator.ofFloat(arrow, "rotation", rotationAngle)
+        val animatorSet = AnimatorSet()
+        animatorSet.play(translationAnimator).with(rotationAnimator)
+        animatorSet.duration = 300
+        animatorSet.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                if (arrow.rotation == 180f) {
+                    isGone = true
+                    unregisterSensorListener()
+                } else {
+                    isGone = false
+                    registerSensorListener()
+                }
+            }
+        })
+        animatorSet.start()
     }
 
     private inner class EyeSensorEventListener : SensorEventListener {
@@ -53,9 +92,9 @@ class EyeView(context: Context, attrs: AttributeSet?) : FrameLayout(context, att
                 if (y > space) y = space
                 else if (y < -space) y = -space
 
-                val point=PointF(x,y)
-                val message=handle.obtainMessage()
-                message.obj=point
+                val point = PointF(x, y)
+                val message = handle.obtainMessage()
+                message.obj = point
                 handle.sendMessage(message)
             }
         }
@@ -65,9 +104,9 @@ class EyeView(context: Context, attrs: AttributeSet?) : FrameLayout(context, att
         }
     }
 
-    private inner class EyeHandle: Handler() {
+    private inner class EyeHandle : Handler() {
         override fun handleMessage(msg: Message) {
-            val point=msg.obj as PointF
+            val point = msg.obj as PointF
             with(left_eye) {
                 rotation = point.x
                 translationX = point.x
