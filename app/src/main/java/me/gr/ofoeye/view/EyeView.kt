@@ -13,6 +13,7 @@ import android.hardware.SensorManager
 import android.os.Handler
 import android.os.Message
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.view_eye.view.*
@@ -32,10 +33,14 @@ class EyeView(context: Context, attrs: AttributeSet?) : FrameLayout(context, att
     private var rotationAngle = 180f
     private var isGone = false
 
+    private var downX = 0f
+    private var downY = 0f
+
     init {
         View.inflate(context, R.layout.view_eye, this)
         setBackgroundResource(R.drawable.bg_eyeview)
         arrow.setOnClickListener { startAnimation() }
+        isClickable = true
     }
 
     fun registerSensorListener() {
@@ -44,6 +49,27 @@ class EyeView(context: Context, attrs: AttributeSet?) : FrameLayout(context, att
 
     fun unregisterSensorListener() {
         sensorManager.unregisterListener(sensorListener)
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        when (ev.action) {
+            MotionEvent.ACTION_DOWN -> {
+                downX = ev.rawX
+                downY = ev.rawY
+            }
+            MotionEvent.ACTION_UP -> {
+                val distanceX = Math.abs(ev.rawX - downX)
+                val distanceY = Math.abs(ev.rawY - downY)
+                if (distanceY > distanceX && distanceY > dp2px(24f)) {
+                    if (isGone) {
+                        if (ev.rawY - downY < 0) startAnimation()
+                    } else {
+                        if (ev.rawY - downY > 0) startAnimation()
+                    }
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     private fun startAnimation() {
@@ -62,7 +88,7 @@ class EyeView(context: Context, attrs: AttributeSet?) : FrameLayout(context, att
         val translationAnimator = ObjectAnimator.ofFloat(this, "translationY", translationYCount)
         val rotationAnimator = ObjectAnimator.ofFloat(arrow, "rotation", rotationAngle)
         val animatorSet = AnimatorSet()
-        animatorSet.play(translationAnimator).with(rotationAnimator)
+        animatorSet.playTogether(translationAnimator, rotationAnimator)
         animatorSet.duration = 300
         animatorSet.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
