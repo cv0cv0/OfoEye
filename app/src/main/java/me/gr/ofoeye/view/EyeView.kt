@@ -19,6 +19,7 @@ import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.view_eye.view.*
 import me.gr.ofoeye.R
 import me.gr.ofoeye.util.dp2px
+import java.lang.ref.WeakReference
 
 /**
  * Created by gr on 2017/7/18.
@@ -27,7 +28,7 @@ class EyeView(context: Context, attrs: AttributeSet?) : FrameLayout(context, att
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     private val sensorListener = EyeSensorEventListener()
-    private val handle = EyeHandle()
+    private val handle = EyeHandle(this)
 
     private var translationYCount = dp2px(195f)
     private var rotationAngle = 180f
@@ -130,15 +131,18 @@ class EyeView(context: Context, attrs: AttributeSet?) : FrameLayout(context, att
         }
     }
 
-    private inner class EyeHandle : Handler() {
+    private class EyeHandle(eyeView: EyeView) : Handler() {
+        private val eyeViewReference=WeakReference<EyeView>(eyeView)
+
         override fun handleMessage(msg: Message) {
+            val eyeView= eyeViewReference.get() ?: return
             val point = msg.obj as PointF
-            with(left_eye) {
+            with(eyeView.left_eye) {
                 rotation = point.x
                 translationX = point.x
                 translationY = point.y
             }
-            with(right_eye) {
+            with(eyeView.right_eye) {
                 rotation = point.x
                 translationX = point.x
                 translationY = point.y
