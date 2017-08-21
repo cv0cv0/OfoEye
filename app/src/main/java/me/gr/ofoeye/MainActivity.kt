@@ -4,15 +4,11 @@ import android.Manifest
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.View
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
-import com.amap.api.location.AMapLocationListener
 import com.amap.api.maps.AMapOptions
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.LatLng
-import com.amap.api.maps.model.Marker
-import com.amap.api.maps.model.MarkerOptions
 import com.amap.api.maps.model.MyLocationStyle
 import kotlinx.android.synthetic.main.activity_main.*
 import permissions.dispatcher.NeedsPermission
@@ -20,7 +16,7 @@ import permissions.dispatcher.RuntimePermissions
 
 @RuntimePermissions
 class MainActivity : AppCompatActivity() {
-    private val locationClient = AMapLocationClient(application)
+    private lateinit var locationClient: AMapLocationClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +38,7 @@ class MainActivity : AppCompatActivity() {
         uiSettings.isZoomControlsEnabled = true
         uiSettings.zoomPosition = AMapOptions.ZOOM_POSITION_RIGHT_CENTER
 
+        locationClient = AMapLocationClient(application)
         val locationOption = AMapLocationClientOption()
         locationOption.locationMode = AMapLocationClientOption.AMapLocationMode.Battery_Saving
         locationOption.isNeedAddress = false
@@ -50,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         locationClient.setLocationOption(locationOption)
         locationClient.setLocationListener { location ->
             if (location != null && location.errorCode == 0) {
-                val latLng=LatLng(location.latitude,location.longitude)
+                val latLng = LatLng(location.latitude, location.longitude)
                 aMap.animateCamera(CameraUpdateFactory.newLatLng(latLng))
             }
         }
