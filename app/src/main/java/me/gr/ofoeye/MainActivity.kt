@@ -42,7 +42,6 @@ class MainActivity : AppCompatActivity() {
         uiSettings.isZoomControlsEnabled = true
         uiSettings.zoomPosition = AMapOptions.ZOOM_POSITION_RIGHT_CENTER
 
-        val locationClient = AMapLocationClient(applicationContext)
         val locationOption = AMapLocationClientOption()
         locationOption.locationMode = AMapLocationClientOption.AMapLocationMode.Battery_Saving
         locationOption.isNeedAddress = false
