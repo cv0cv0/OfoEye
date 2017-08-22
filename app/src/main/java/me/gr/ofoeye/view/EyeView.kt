@@ -44,6 +44,11 @@ class EyeView(context: Context, attrs: AttributeSet?) : FrameLayout(context, att
         isClickable = true
     }
 
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        setMeasuredDimension(measuredWidth,dp2px(280f).toInt())
+    }
+
     fun registerSensorListener() {
         if (!isGone) sensorManager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_UI)
     }
