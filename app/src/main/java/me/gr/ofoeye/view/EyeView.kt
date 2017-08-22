@@ -15,7 +15,9 @@ import android.os.Message
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.view_eye.view.*
 import me.gr.ofoeye.R
 import me.gr.ofoeye.util.dp2px
@@ -42,11 +44,6 @@ class EyeView(context: Context, attrs: AttributeSet?) : FrameLayout(context, att
         setBackgroundResource(R.drawable.bg_eyeview)
         arrow.setOnClickListener { startAnimation() }
         isClickable = true
-    }
-
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        setMeasuredDimension(measuredWidth,dp2px(280f).toInt())
     }
 
     fun registerSensorListener() {
